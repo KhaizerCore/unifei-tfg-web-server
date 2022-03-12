@@ -1,44 +1,28 @@
-const express = require('express');
-const app = express();
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
 
 
 // parameters( path, function(request, response, nextFunction))
 app.get('/', function(req, res) {
     console.log('GET requested');
-
-    res.render('index');
-
 });
 
-// defining userRouter path --> every get, set, post and delete will be in /users path
-const userRouter = require('./routes/users');
-app.use('/users', userRouter);
+app.post('/', function(req, res) {
+    console.log('req body:',req.body);
+    res.send('POST requested');
+});
 
 
-const userRouter = require('./routes/boards');
-app.use('/boards', userRouter);
+const iotRouter = require('./routes/iot/app');
+app.use('/iot/app', iotRouter);
+
+const applicationsRouter = require('./routes/applications/app');
+app.use('/applications/app', applicationsRouter);
 
 app.listen(5000);
-
-/*
-    GET - Retrieve an existing resource from server
-    POST - Creates new resourses
-    PUT - Edits an existing resource
-    DELETE - Deletes an existing resource
-*/
-
-
-/*
-    var html_content = `
-            <div>
-                <span>Some HTML here</span>
-            </div>
-
-            <div>
-                <form name="userDetails" method="post" action="saveChanges.php">
-                    <input type="text" name="firstName" value="" />
-                    <input type="submit" value="save"/>
-                </form>
-            </div>
-        `;
-*/
