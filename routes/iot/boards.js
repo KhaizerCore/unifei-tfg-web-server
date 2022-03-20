@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../../db');
+
+async function retriveBoard(req, res, Board){
+    let board = await Board.find();
+    console.log(board);
+    res.send(board);
+}
 
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
-    res.send("Board List");
+    retriveBoard(req, res, db.Board);
 });
 
 router.get('/new', function(req, res) {
@@ -14,7 +21,6 @@ router.post('/create', function(req, res) {
     // console.log("body:",req.body);
     // console.log("header token:",req.header);
     
-    let db = require('../../db');
     let data = req.body;
     let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
     var board = new boards({

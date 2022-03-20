@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../../db');
+
+async function retriveUser(req, res, User){
+    let user = await User.find();
+    console.log(user);
+    res.send(user);
+}
 
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
-    res.send("User List");
+    retriveUser(req, res, db.User);
 });
 
 router.get('/new', function(req, res) {
@@ -11,7 +18,25 @@ router.get('/new', function(req, res) {
 });
 
 router.post('/create', function(req, res) {
-    console.log("req:", req.body);
+
+    let data = req.body;
+    let users = db.Mongoose.model('usercollection', db.UserSchema, 'usercollection');
+    var user = new users({
+        name : data.name,
+        email : data.email,
+        cellphone : data.cellphone,
+        password : data. password
+    });
+    user.save(
+        function(error) {
+            if (error) {
+                console.log("deu ruim 1");
+            } else {
+                console.log("deu baum 1");
+            }
+        }
+    );
+
     res.send("Create User");
 });
 
