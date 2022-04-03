@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../db');
 
+const authRouter = require('./auth');
+router.use('/auth', authRouter);
+
 async function retriveUser(req, res, User){
     let user = await User.find();
     console.log(user);
@@ -11,10 +14,6 @@ async function retriveUser(req, res, User){
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
     retriveUser(req, res, db.User);
-});
-
-router.get('/new', function(req, res) {
-    res.send("User New Form");
 });
 
 router.post('/create', function(req, res) {

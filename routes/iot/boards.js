@@ -13,10 +13,6 @@ router.get('/', function(req, res) {
     retriveBoard(req, res, db.Board);
 });
 
-router.get('/new', function(req, res) {
-    res.send("Board New Form");
-});
-
 router.post('/create', function(req, res) {
     // console.log("body:",req.body);
     // console.log("header token:",req.header);
