@@ -16,10 +16,28 @@ const userSchema = new mongoose.Schema({
 }, { collection: 'usercollection' });
 const User = mongoose.model('User', userSchema);
 
+const passwordResetSchema = new mongoose.Schema({
+        email : String,
+        code : String,
+        timestamp : String
+}, { collection: 'password_reset_collection' });
+const PasswordReset = mongoose.model('PasswordReset', passwordResetSchema);
+
+const loginSchema = new mongoose.Schema({
+        email : String,
+        token : String,
+        timestamp : String
+}, { collection: 'logincollection' });
+const Login = mongoose.model('Login', loginSchema);
+
 module.exports = { 
         Mongoose: mongoose, 
         BoardSchema: boardSchema, 
         UserSchema: userSchema,
-        User: User,
-        Board: Board
+        PasswordResetSchema: passwordResetSchema,
+        LoginSchema: loginSchema,
+        User : User,
+        Board : Board,
+        PasswordReset : PasswordReset,
+        Login : Login
 };

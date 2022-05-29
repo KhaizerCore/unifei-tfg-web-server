@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "golive": "nodemon server.js"
+    "golive": "nodemon middleware.js"
   },
   "keywords": [],
   "author": "",
@@ -13,9 +13,11 @@
     "express": "^4.17.3",
     "mongodb": "^4.4.1",
     "mongoose": "^6.2.6",
+    "nodemailer": "^6.7.5",
+    "uuid": "^8.3.2",
     "xhr2": "^0.2.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.16"
   }
 }

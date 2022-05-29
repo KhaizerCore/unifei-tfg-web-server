@@ -4,7 +4,8 @@ const db = require('../../db');
 
 async function retriveBoard(req, res, Board){
     let board = await Board.find();
-    console.log(board);
+    console.log("params:",req.params);
+    console.log("board:",board);
     res.send(board);
 }
 
