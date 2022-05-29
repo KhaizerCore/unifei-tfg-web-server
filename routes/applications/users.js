@@ -20,17 +20,12 @@ async function validatePasswordResetCode(email, code){
         email : email,
         code : code
     });
-
     if (passwordReset.length > 0){ // exists
         //checks for timestamp delta
         let now = new Date().getTime();
-        if (now - passwordReset[0].timestamp <= 30*1000){   // 60 * 1000ms = 60s
+        if (now - passwordReset[0].timestamp <= 60*5*1000){   // 60 * 5 * 1000ms = 5 min
             return true; // totally validated!
-        }else{
-            console.log("code timeout!");
         }
-    }else{
-        console.log("emil/code does not match");
     }
     return false;
 }
@@ -61,10 +56,6 @@ async function deletePasswordResetRegister(email, code){
     await PasswordReset.findOneAndDelete({
         email : email, 
         code : code
-    }, (err) => {
-        //if (err) {
-        //}else{
-        //}
     }).then(result => {
         //console.log("deleted:",result);
     });
@@ -72,29 +63,29 @@ async function deletePasswordResetRegister(email, code){
 
 async function changePassword(req, res, email, code, newPassword){
     validatePasswordResetCode(email, code).then( validated => {
+        deletePasswordResetRegister(email, code);
         if (validated){
-            let User = db.User;
-            User.findOneAndUpdate({
-                email : email
-            },{
-                password : newPassword
-            },{
-                upsert : false,
-                new : true
-            }, (err) => {
-                //if (err) {
-                //}else{
-                //}
-            }).then(result => {
-                //console.log("updated:",result);
-            });
-                
-            res.status(200).send('Validated!');
+            try {
+                let User = db.User;
+                User.findOneAndUpdate({
+                    email : email
+                },{
+                    password : newPassword
+                },{
+                    upsert : false,
+                    new : true
+                }).then(result => {
+                    //console.log("updated:",result);
+                });                
+                res.status(200).send('Validated!');
+            } catch (error) {
+                res.status(500).send('Internal Server Error');
+            }            
         }else{
             res.status(401).send('Invalid Code!');
         }        
     });
-    deletePasswordResetRegister(email, code).then(result => {});
+    //deletePasswordResetRegister(email, code).then(result => {});
 }
 
 router.post('/create', function(req, res) {
@@ -152,7 +143,7 @@ async function savePasswordResetRegister(emailTo, code){
         code : code,
         timestamp : new Date().getTime()
     });
-    passwordReset.save(
+    await passwordReset.save(
         function(error) {
             if (error) {
                 console.log("Password Reset Register Creating Failed!");
@@ -168,8 +159,9 @@ async function sendPasswordResetEmail(req, res, emailTo){
     let subject = 'Password Change Request - SIGIOT';
     let content = 'Use this code to reset your password: ' + code;
 
-    savePasswordResetRegister(emailTo, code);
-    sendEmail(req, res, emailTo, subject, content);
+    savePasswordResetRegister(emailTo, code).then(result => {
+        sendEmail(req, res, emailTo, subject, content);
+    });    
 }
 
 function sendEmail(req, res, emailTo, subject, content){

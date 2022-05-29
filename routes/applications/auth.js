@@ -30,27 +30,37 @@ async function saveLoginRegister(email, token) {
     );
 }
 
+async function removeAllLoginRegisters(email){
+    let Login = db.Login;
+    let login = await Login.deleteMany({
+        email : email
+    }).then(result => {
+    });
+}
+
 async function userLogin(req, res, User){
     let email = req.body.email;
     let password = req.body.password;
-    console.log("email:",email);
-    console.log("password:",password);
     try{
         validateEmailPassword(email, password).then( validated => {
             if (validated){
-                let token = uuidv4();
-                saveLoginRegister(email, token);       
-                // 202 Login Accepted
-                res.status(202).send({
-                    validation_token : token
+                removeAllLoginRegisters(email).then(() => {
+                    let token = uuidv4();
+                    saveLoginRegister(email, token).then(() => {
+                        // 202 Login Accepted
+                        res.status(202).header({
+                            'Authorization' : token
+                        }).send();
+                        console.log("Login Accepted!");
+                    });                  
                 });
-                console.log("Login Accepted!");
             }else{
                 // 401 Login Unauthorized
                 res.status(401).send("Login Refused!");
             }
         });    
     }catch(e){
+        // 500 Login Error
         res.status(500).send("Login Error!");
     }
 }
