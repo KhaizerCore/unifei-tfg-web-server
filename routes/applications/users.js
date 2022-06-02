@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../db');
 const nodemailer = require('nodemailer');
+const inputValidation = require('./input-validation');
 
-const authRouter = require('./auth');
-router.use('/auth', authRouter);
+const auth = require('./auth');
+router.use('/auth', auth.router);
 
 async function userExists(email){
     let User = db.User;
@@ -14,7 +15,7 @@ async function userExists(email){
     return user.length > 0;
 }
 
-async function validatePasswordResetCode(email, code){
+async function macthEmailPasswordResetCode(email, code){
     let PasswordReset = db.PasswordReset;
     let passwordReset = await PasswordReset.find({
         email : email,
@@ -62,44 +63,57 @@ async function deletePasswordResetRegister(email, code){
 }
 
 async function changePassword(req, res, email, code, newPassword){
-    validatePasswordResetCode(email, code).then( validated => {
-        deletePasswordResetRegister(email, code);
-        if (validated){
-            try {
-                let User = db.User;
-                User.findOneAndUpdate({
-                    email : email
-                },{
-                    password : newPassword
-                },{
-                    upsert : false,
-                    new : true
-                }).then(result => {
-                    //console.log("updated:",result);
-                });                
-                res.status(200).send('Validated!');
-            } catch (error) {
-                res.status(500).send('Internal Server Error');
-            }            
+    if (inputValidation.emailAndPasswordValidation(email, newPassword)){
+        if (inputValidation.validate6NumberAuthCode(code)){
+            macthEmailPasswordResetCode(email, code).then( matches => {
+                deletePasswordResetRegister(email, code);
+                if (matches){
+                    try {
+                        let User = db.User;
+                        User.findOneAndUpdate({
+                            email : email
+                        },{
+                            password : newPassword
+                        },{
+                            upsert : false,
+                            new : true
+                        }).then(result => {
+                            //console.log("updated:",result);
+                        });                
+                        res.status(200).send('Validated!');
+                    } catch (error) {
+                        res.status(500).send('Internal Server Error');
+                    }            
+                }else{
+                    res.status(401).send('Invalid Code!');
+                }        
+            });
         }else{
             res.status(401).send('Invalid Code!');
-        }        
-    });
-    //deletePasswordResetRegister(email, code).then(result => {});
+        }
+    }else{
+        res.status(500).send('Invalid User and/or Password!');
+    }
 }
 
 router.post('/create', function(req, res) {
     let data = req.body;
-    let email = data.email
 
-    // CHECK IF EMAIL/USER already EXISTS IN database before SAVING IT!!!
-    userExists(email).then( exists => {
-        if (exists){
-            res.status(400).send('Email already in use!');
-        }else{
-            createUser(req, res, data);
-        }
-    });
+    let email = data.email
+    let password = data.password;
+
+    if (inputValidation.emailAndPasswordValidation(email, password)){
+        userExists(email).then( exists => {
+            if (exists){
+                res.status(400).send('Email already in use!');
+            }else{
+                createUser(req, res, data);
+            }
+        });
+    }else{
+        res.status(500).send('Invalid User and/or Password!');
+    }
+    
 });
 
 
@@ -108,14 +122,18 @@ router.post('/forgotPass', function(req, res) {
     let data = req.body;    
     let emailTo = data.email;
     
-    // CHECK IF EMAIL EXISTS IN database before sending email !!!
-    userExists(emailTo).then( exists => {
-        if (exists){
-            sendPasswordResetEmail(req, res, emailTo);
-        }else{
-            res.status(400).send('Email not in use by any account!');
-        }
-    });
+    if (inputValidation.emailValidator.validate(emailTo)){
+        // CHECK IF EMAIL EXISTS IN database before sending email !!!
+        userExists(emailTo).then( exists => {
+            if (exists){
+                sendPasswordResetEmail(req, res, emailTo);
+            }else{
+                res.status(400).send('Email not in use by any account!');
+            }
+        });
+    }else{
+        res.status(500).send('Invalid e-mail!');
+    }   
     
 });
 
@@ -123,18 +141,6 @@ router.put('/changePass', function(req, res) {
     let data = req.body;
     changePassword(req, res, data.email, data.code, data.new_password);
 });
-
-function getRandomIntFrom0To9() {
-    return Math.floor(Math.random() * 9);
-}
-
-function getAuthCode(){
-    let code = '';
-    for (let i = 0; i < 6; i ++){
-        code += String(getRandomIntFrom0To9());
-    }
-    return String(code)
-}
 
 async function savePasswordResetRegister(emailTo, code){
     let passwordResets = db.Mongoose.model('password_reset_collection', db.PasswordResetSchema, 'password_reset_collection');
@@ -155,7 +161,7 @@ async function savePasswordResetRegister(emailTo, code){
 }
 
 async function sendPasswordResetEmail(req, res, emailTo){
-    let code = getAuthCode();
+    let code = auth.getAuthCode();
     let subject = 'Password Change Request - SIGIOT';
     let content = 'Use this code to reset your password: ' + code;
 
