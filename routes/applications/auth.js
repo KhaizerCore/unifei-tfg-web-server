@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../../db');
 const inputValidation = require('./input-validation');
+const responseMessages = require('./res-messages');
 
 function getRandomIntFrom0To9() {
     return Math.floor(Math.random() * 9);
@@ -64,22 +65,29 @@ async function userLogin(req, res, User){
                         saveLoginRegister(email, token).then(() => {
                             // 202 Login Accepted
                             res.status(202).send({
+                                'message' : responseMessages.key('login-success').lang('pt_br'),
                                 'token' : token
                             });
-                            console.log("Login Accepted!");
+                            console.log(responseMessages.key('login-success').lang('pt_br'));
                         });                  
                     });
                 }else{
                     // 401 Login Unauthorized
-                    res.status(401).send("Login Refused!");
+                    res.status(401).send(
+                        responseMessages.key('login-fail').lang('pt_br')
+                    );
                 }
             });    
         }catch(e){
             // 500 Login Error
-            res.status(500).send("Login Error!");
+            res.status(500).send(
+                responseMessages.key('internal-server-error').lang('pt_br')
+            );
         }
     }else{
-        res.status(500).send("Invalid User and/or Password!");
+        res.status(500).send(
+            responseMessages.key('invalid-email-password').lang('pt_br')
+        );
     }
 }
 

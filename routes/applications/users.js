@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../../db');
 const nodemailer = require('nodemailer');
 const inputValidation = require('./input-validation');
+const responseMessages = require('./res-messages');
 
 const auth = require('./auth');
 router.use('/auth', auth.router);
@@ -43,10 +44,14 @@ async function createUser(req, res, data){
         function(error) {
             if (error) {
                 console.log("User Creation Failed!");
-                res.status(500).send("User Creation Failed!");
+                res.status(500).send(
+                    responseMessages.key('user-creation-fail').lang('pt_br')
+                );
             } else {
                 console.log("User Created Successfully!");
-                res.status(200).send("User Created Successfully!");
+                res.status(200).send(
+                    responseMessages.key('user-creation-success').lang('pt_br')
+                );
             }
         }
     );
@@ -80,19 +85,29 @@ async function changePassword(req, res, email, code, newPassword){
                         }).then(result => {
                             //console.log("updated:",result);
                         });                
-                        res.status(200).send('Validated!');
+                        res.status(200).send(
+                            responseMessages.key('pass-reset-success').lang('pt_br')
+                        );
                     } catch (error) {
-                        res.status(500).send('Internal Server Error');
+                        res.status(500).send(
+                            responseMessages.key('pass-reset-fail').lang('pt_br')
+                        );
                     }            
                 }else{
-                    res.status(401).send('Invalid Code!');
+                    res.status(401).send(
+                        responseMessages.key('invalid-code').lang('pt_br')
+                    );
                 }        
             });
         }else{
-            res.status(401).send('Invalid Code!');
+            res.status(401).send(
+                responseMessages.key('invalid-code').lang('pt_br')
+            );
         }
     }else{
-        res.status(500).send('Invalid User and/or Password!');
+        res.status(500).send(
+            responseMessages.key('invalid-email-password').lang('pt_br')
+        );
     }
 }
 
@@ -105,13 +120,17 @@ router.post('/create', function(req, res) {
     if (inputValidation.emailAndPasswordValidation(email, password)){
         userExists(email).then( exists => {
             if (exists){
-                res.status(400).send('Email already in use!');
+                res.status(400).send(
+                    responseMessages.key('email-in-use').lang('pt_br')
+                );
             }else{
                 createUser(req, res, data);
             }
         });
     }else{
-        res.status(500).send('Invalid User and/or Password!');
+        res.status(500).send(
+            responseMessages.key('invalid-email-password').lang('pt_br')
+        );
     }
     
 });
@@ -128,11 +147,15 @@ router.post('/forgotPass', function(req, res) {
             if (exists){
                 sendPasswordResetEmail(req, res, emailTo);
             }else{
-                res.status(400).send('Email not in use by any account!');
+                res.status(400).send(
+                    responseMessages.key('invalid-email').lang('pt_br')
+                );
             }
         });
     }else{
-        res.status(500).send('Invalid e-mail!');
+        res.status(500).send(
+            responseMessages.key('invalid-email').lang('pt_br')
+        );
     }   
     
 });
@@ -162,8 +185,8 @@ async function savePasswordResetRegister(emailTo, code){
 
 async function sendPasswordResetEmail(req, res, emailTo){
     let code = auth.getAuthCode();
-    let subject = 'Password Change Request - SIGIOT';
-    let content = 'Use this code to reset your password: ' + code;
+    let subject = responseMessages.key('pass-change-subject-info').lang('pt_br') + ' - SIGIOT';
+    let content = responseMessages.key('pass-change-content-info').lang('pt_br') + ': ' + code;
 
     savePasswordResetRegister(emailTo, code).then(result => {
         sendEmail(req, res, emailTo, subject, content);
@@ -189,10 +212,10 @@ function sendEmail(req, res, emailTo, subject, content){
     transporter.sendMail(mailOptions, function(error, info){
         if (error) {
             console.log(error);
-            res.status(500).send(String(subject) + " Email Not Sent");
+            res.status(500).send(String(subject) + " " + responseMessages.key('email-not-sent').lang('pt_br'));
         } else {
             console.log('Email sent: ' + info.response);
-            res.status(200).send(String(subject) + " Email Sent Successfully!");
+            res.status(200).send(String(subject) + " " + responseMessages.key('email-sent').lang('pt_br'));
         }
     });
 }
