@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../db');
+const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const inputValidation = require('./input-validation');
 const responseMessages = require('./res-messages');
-
 const auth = require('./auth');
+
 router.use('/auth', auth.router);
 
 async function userExists(email){
@@ -38,7 +39,8 @@ async function createUser(req, res, data){
         name : data.name,
         email : data.email,
         cellphone : data.cellphone,
-        password : data. password
+        password : data. password,
+        license_keys : []
     });
     user.save(
         function(error) {
@@ -67,7 +69,11 @@ async function deletePasswordResetRegister(email, code){
     });
 }
 
-async function changePassword(req, res, email, code, newPassword){
+async function changePassword(req, res){
+    let data = req.body;
+    let email = data.email; 
+    let code = data.code;
+    let newPassword = data.new_password
     if (inputValidation.emailAndPasswordValidation(email, newPassword)){
         if (inputValidation.validate6NumberAuthCode(code)){
             macthEmailPasswordResetCode(email, code).then( matches => {
@@ -160,9 +166,45 @@ router.post('/forgotPass', function(req, res) {
     
 });
 
+async function getUser(email){
+    let User = db.User;
+    let user = await User.findOne({
+        email : email
+    });
+    return user;
+}
+
+
+async function requestUserBoardLicenses(req, res){
+    let email = req.headers.email;
+    let token = req.headers.token;
+
+    auth.validateUserLoginToken(email, token).then(validated => { 
+        if (validated){
+            getUser(email).then(user => {
+                res.status(200).send({
+                    license_keys : user.license_keys
+                });
+            });            
+        }else{
+            // 401 Unauthorized
+            res.status(401).send({
+                // INSERIR MENSAGEM DE RESPOSTA
+            });
+        }
+    });
+}
+
 router.put('/changePass', function(req, res) {
-    let data = req.body;
-    changePassword(req, res, data.email, data.code, data.new_password);
+    changePassword(req, res);
+});
+
+router.post('/createLicense', function(req, res) {
+    requestBoardLicenseCreation(req, res);
+});
+
+router.get('/boardLicenses', function(req, res) {
+    requestUserBoardLicenses(req, res);
 });
 
 async function savePasswordResetRegister(emailTo, code){
@@ -216,6 +258,46 @@ function sendEmail(req, res, emailTo, subject, content){
         } else {
             console.log('Email sent: ' + info.response);
             res.status(200).send(String(subject) + " " + responseMessages.key('email-sent').lang('pt_br'));
+        }
+    });
+}
+
+function userHasAchievedBoardLicenseLimit(email){
+    // Function to be further developed. For now, user can have no license limit
+    return false;
+}
+
+function generateBoardLicense(){
+    return uuidv4();
+}
+
+async function createBoardLicense(email){
+    let license_key = generateBoardLicense();
+
+    try {
+        await db.User.updateOne(
+            {email : email},
+            { $push : { license_keys : license_key }}
+        );
+        console.log('Board License Successfully created');
+    } catch (error) {
+        console.log('Board License creation failed');
+    }   
+}
+
+async function requestBoardLicenseCreation(req, res){
+    // passar email e token de usuario
+    let data = req.body;
+    let email = data.email;
+    let token = data.token;
+
+    // VALIDATE WITH EMAIL AND TOKEN, and timestamp delta max session time
+    auth.validateUserLoginToken(email, token).then(validated => {
+        if (validated) {
+            if (!userHasAchievedBoardLicenseLimit()){
+                createBoardLicense(email)
+                res.status(200).send('license request probably well done');
+            }
         }
     });
 }

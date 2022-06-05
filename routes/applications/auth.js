@@ -26,6 +26,28 @@ async function matchEmailPassword(email, password) {
     return validation.length > 0;
 }
 
+async function validateUserLoginToken(email, token){
+    let Login = db.Login;
+    // matches login token
+    let validation = await Login.find({
+        email : email,
+        token : token
+    });
+    // TO BE IMPLEMENTED: MAX USER SESSION TIME --> compare now with timestamp
+    /*
+    if (validation.length > 0){
+        let delta = new Date().getTime() - validation[0].timestamp;
+        if (delta <= MAX_LOGIN_SESSION_TIME){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    */
+    return validation.length > 0;   
+}
+
 async function saveLoginRegister(email, token) {
     let logins = db.Mongoose.model('logincollection', db.LoginSchema, 'logincollection');
     let login = new logins({
@@ -97,5 +119,6 @@ router.post('/login', function(req, res) {
 
 module.exports = {
     router : router,
-    getAuthCode : getAuthCode
+    getAuthCode : getAuthCode,
+    validateUserLoginToken : validateUserLoginToken
 }

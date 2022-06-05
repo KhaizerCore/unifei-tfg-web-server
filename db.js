@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/tfg');
 
 const boardSchema = new mongoose.Schema({
-        MAC_ADDRESS : String,
-        DEVICE_TYPE : String,
-        DEVICE_SETUP : Array
+        license_key : String,
+        device_type : String,
+        device_setup : Array
 }, { collection: 'boardcollection' });
 const Board = mongoose.model('Board', boardSchema);
 
@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema({
         name : String,
         email : String,
         cellphone : String,
-        password : String
+        password : String,
+        license_keys : Array
 }, { collection: 'usercollection' });
 const User = mongoose.model('User', userSchema);
 

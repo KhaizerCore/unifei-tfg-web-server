@@ -35,6 +35,7 @@ async function registerBoard(res, data){
     }
 }
 
+
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
     retriveBoard(req, res, db.Board);
