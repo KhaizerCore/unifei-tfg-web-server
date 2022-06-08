@@ -3,45 +3,65 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../../db');
 
-async function retriveBoard(req, res, Board){
-    let board = await Board.find();
-    console.log("params:",req.params);
-    console.log("board:",board);
-    res.send(board);
+async function retriveBoardData(req, res){
+    try {
+        let license_key = req.headers.license_key;
+        let board = await db.Board.findOne({
+            license_key : license_key
+        });
+        res.status(200).send(board);
+    } catch (error) {
+        res.status(500).send();
+    }
+}
+
+async function licenseInUse(license_key){
+    let boards = await db.Board.find({
+        license_key: license_key
+    });
+    return boards.length > 0;
 }
 
 async function registerBoard(res, data){
     try {
-        let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
-        var board = new boards({
-            MAC_ADDRESS : data.MAC_ADDRESS,
-            DEVICE_TYPE : data.DEVICE_TYPE,
-            DEVICE_SETUP : data.DEVICE_SETUP
-        });
-        board.save(
-            function(error) {
-                if (error) {
-                    console.log("Board Registration Failed!");
-                    res.status(500).send("Board Registration Failed!");
-                } else {
-                    console.log("Board Registered Successfully!");
-                    res.status(200).send("Board Registered Successfully!");
-                }
+        licenseInUse(data.license_key).then(inUse => {
+            if (!inUse) {
+                let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
+                var board = new boards({
+                    license_key : data.license_key,
+                    device_nickname : data.device_nickname,
+                    device_type : data.device_type,
+                    device_setup : data.device_setup
+                });
+                board.save(
+                    function(error) {
+                        if (error) {
+                            console.log("Board Registration Failed!");
+                            res.status(500).send("Board Registration Failed!");
+                        } else {
+                            console.log("Board Registered Successfully!");
+                            res.status(200).send("Board Registered Successfully!");
+                        }
+                    }
+                );
+            }else{
+                console.log("Board Registration Failed!");
+                res.status(500).send("Board Registration Failed!");
             }
-        );
-        
+        });        
     }catch(err){
-
+        console.log("Board Registration Failed!");
+                res.status(500).send("Board Registration Failed!");
     }
 }
 
 
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
-    retriveBoard(req, res, db.Board);
+    retriveBoardData(req, res);
 });
 
-router.post('/create', function(req, res) {
+router.post('/register', function(req, res) {
     let data = req.body;
     registerBoard(res, data);    
 });

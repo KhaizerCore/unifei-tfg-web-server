@@ -3,6 +3,7 @@ mongoose.connect('mongodb://localhost:27017/tfg');
 
 const boardSchema = new mongoose.Schema({
         license_key : String,
+        device_nickname : String,
         device_type : String,
         device_setup : Array
 }, { collection: 'boardcollection' });

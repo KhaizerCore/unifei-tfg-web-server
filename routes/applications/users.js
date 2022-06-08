@@ -287,9 +287,8 @@ async function createBoardLicense(email){
 
 async function requestBoardLicenseCreation(req, res){
     // passar email e token de usuario
-    let data = req.body;
-    let email = data.email;
-    let token = data.token;
+    let email = req.headers.email;
+    let token = req.headers.token;
 
     // VALIDATE WITH EMAIL AND TOKEN, and timestamp delta max session time
     auth.validateUserLoginToken(email, token).then(validated => {
