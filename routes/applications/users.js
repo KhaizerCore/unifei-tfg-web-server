@@ -51,9 +51,9 @@ async function createUser(req, res, data){
                 );
             } else {
                 console.log("User Created Successfully!");
-                res.status(200).send(
-                    responseMessages.key('user-creation-success').lang('pt_br')
-                );
+                res.status(200).send({
+                    'message' : responseMessages.key('user-creation-success').lang('pt_br')
+                });
             }
         }
     );

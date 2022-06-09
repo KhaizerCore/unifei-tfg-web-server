@@ -40,7 +40,9 @@ async function registerBoard(res, data){
                             res.status(500).send("Board Registration Failed!");
                         } else {
                             console.log("Board Registered Successfully!");
-                            res.status(200).send("Board Registered Successfully!");
+                            res.status(200).send({
+                                'message' : "Board Registered Successfully!"
+                            });
                         }
                     }
                 );
@@ -51,7 +53,7 @@ async function registerBoard(res, data){
         });        
     }catch(err){
         console.log("Board Registration Failed!");
-                res.status(500).send("Board Registration Failed!");
+        res.status(500).send("Board Registration Failed!");
     }
 }
 
