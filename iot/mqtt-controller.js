@@ -1,16 +1,17 @@
 // controller.js
 const mqtt = require('mqtt');
-const { subscribe } = require('../routes/applications/users');
-/*
+const db = require('../db');
+
 const client = mqtt.connect('da4cea57792c41b6be6304e4ece822b0.s1.eu.hivemq.cloud', {
     rejectUnauthorized: false,
     protocol: 'MQTTS'
 });
-*/
+/*
 const client = mqtt.connect('broker.hivemq.com', {
   //rejectUnauthorized: false,
   protocol: 'MQTT'
 });
+*/
 
 var temperatureValue = -1;
 var connected = false;
@@ -20,28 +21,62 @@ client.on('connect', () => {
 });
 
 client.on('message', (topic, message) => {
-  switch (topic) {
-    case 'board/connected':
-      return handleBoardConnected(message)
-    case 'sensors/temperature/value':
-      return handleTemperatureSensorValue(message)
-  }
-  console.log('No handler for topic %s', topic)
+  processTopicMessage(topic, message);  
 });
 
-function subscribeToBoardData(boardData) {
-  for (let i = 0; i < boardData.device_setup.length; i++) {
-    let IO_Element = boardData.device_setup[i];
-    // board IO Elements topics syntax structure
-    // |--> board/boardID/IO/PIN 
-    console.log('PIN:',IO_Element.PIN)
-    let topic = 'board/' + boardData.board_id + '/IO/' + IO_Element.PIN;
-    client.subscribe(topic);
+function validBoardIOTopicReturnTopicBoardID(topic) {
+  return (topic.includes('board/') &&  topic.includes('/IO')) ? 
+    topic.substring(
+      topic.lastIndexOf('board/') + String('board/').length,
+      topic.lastIndexOf('/IO')
+    ) 
+    : false;
+}
+
+function processTopicMessage(topic, message) {
+  message = JSON.parse(message);
+  
+  switch (topic) {
+    case 'board/connected':
+      return handleBoardConnected(message);
   }
+
+  if (validBoardIOTopicReturnTopicBoardID(topic)) {
+    if (validBoardIOTopicReturnTopicBoardID(topic) == message.board_id)
+      return handleBoardIOValues(message);
+  }
+
+  console.log('No handler for topic %s', topic);
+}
+
+async function handleBoardIOValues(message) {
+  console.log('message:', message);
+  try {
+    await db.Board.findOneAndUpdate(
+      {
+        license_key : message.board_id 
+      },
+      {
+        device_setup : message.device_setup
+      }
+    );
+    console.log('handleBoardIOValues db.Board.findOneAndUpdate successfull');
+  } catch (error) {
+    console.log('handleBoardIOValues error', error);
+  }
+  
+}
+
+function subscribeToBoardIO(boardID) {
+  // board IO topic syntax structure
+  // |--> board/boardID/IO
+  let topic = 'board/' + boardID + '/IO';
+  client.subscribe(topic);
+  console.log('subscribed to topic', topic);
 }
 
 function handleBoardConnected (message) {
-  let boardData = JSON.parse(message);
+  let boardData = message;
   /*
     {
       board_id : boardID,
@@ -65,7 +100,7 @@ function handleBoardConnected (message) {
   */
   console.log('board connected', boardData);
 
-  subscribeToBoardData(boardData);
+  subscribeToBoardIO(boardData.board_id);
   
 }
 

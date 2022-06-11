@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/tfg');
 
 const boardSchema = new mongoose.Schema({
+        owner_email : String,
         license_key : String,
         device_nickname : String,
         device_type : String,

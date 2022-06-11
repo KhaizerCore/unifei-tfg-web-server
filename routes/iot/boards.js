@@ -22,35 +22,51 @@ async function licenseInUse(license_key){
     return boards.length > 0;
 }
 
+async function userHasLicense(email, license_key){
+    let userLicenses = await db.User.find({
+        email: email,
+        license_keys : license_key
+    });
+    return userLicenses.length > 0;
+}
+
 async function registerBoard(res, data){
     try {
-        licenseInUse(data.license_key).then(inUse => {
-            if (!inUse) {
-                let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
-                var board = new boards({
-                    license_key : data.license_key,
-                    device_nickname : data.device_nickname,
-                    device_type : data.device_type,
-                    device_setup : data.device_setup
-                });
-                board.save(
-                    function(error) {
-                        if (error) {
-                            console.log("Board Registration Failed!");
-                            res.status(500).send("Board Registration Failed!");
-                        } else {
-                            console.log("Board Registered Successfully!");
-                            res.status(200).send({
-                                'message' : "Board Registered Successfully!"
-                            });
-                        }
+        userHasLicense(data.owner_email, data.license_key).then(hasLicense => {
+            if (hasLicense){
+                licenseInUse(data.license_key).then(inUse => {
+                    if (!inUse) {
+                        let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
+                        var board = new boards({
+                            owner_email : data.owner_email,
+                            license_key : data.license_key,
+                            device_nickname : data.device_nickname,
+                            device_type : data.device_type,
+                            device_setup : data.device_setup
+                        });
+                        board.save(
+                            function(error) {
+                                if (error) {
+                                    console.log("Board Registration Failed!");
+                                    res.status(500).send("Board Registration Failed!");
+                                } else {
+                                    console.log("Board Registered Successfully!");
+                                    res.status(200).send({
+                                        'message' : "Board Registered Successfully!"
+                                    });
+                                }
+                            }
+                        );
+                    }else{
+                        console.log("Board Registration Failed!");
+                        res.status(500).send("Board Registration Failed!");
                     }
-                );
+                });
             }else{
                 console.log("Board Registration Failed!");
                 res.status(500).send("Board Registration Failed!");
             }
-        });        
+        });
     }catch(err){
         console.log("Board Registration Failed!");
         res.status(500).send("Board Registration Failed!");

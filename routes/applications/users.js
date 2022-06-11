@@ -174,6 +174,14 @@ async function getUser(email){
     return user;
 }
 
+async function getUserBoards(email) {
+    let boards = await db.Board.find({
+        owner_email : email
+    });
+    console.log('getUserBoards', boards);
+    return boards;
+}
+
 
 async function requestUserBoardLicenses(req, res){
     let email = req.headers.email;
@@ -195,6 +203,26 @@ async function requestUserBoardLicenses(req, res){
     });
 }
 
+async function requestUserBoards(req, res){
+    let email = req.headers.email;
+    let token = req.headers.token;
+
+    auth.validateUserLoginToken(email, token).then(validated => { 
+        if (validated) {
+            getUserBoards(email).then(boards => {
+                res.status(200).send({
+                    boards : boards
+                });
+            });          
+        }else{
+            // 401 Unauthorized
+            res.status(401).send({
+                // INSERIR MENSAGEM DE RESPOSTA
+            });
+        }
+    });
+}
+
 router.put('/changePass', function(req, res) {
     changePassword(req, res);
 });
@@ -205,6 +233,10 @@ router.post('/createLicense', function(req, res) {
 
 router.get('/boardLicenses', function(req, res) {
     requestUserBoardLicenses(req, res);
+});
+
+router.get('/boards', function(req, res) {
+    requestUserBoards(req, res);
 });
 
 async function savePasswordResetRegister(emailTo, code){
