@@ -17,13 +17,14 @@ var getAuthCode = function (){
     return String(code)
 }
 
+// if email, password matches return username, otherwise returns false
 async function matchEmailPassword(email, password) {
     let User = db.User;
     let validation = await User.find({
         email : email,
         password : password
     });
-    return validation.length > 0;
+    return validation.length > 0 ? validation[0].name : false;
 }
 
 async function validateUserLoginToken(email, token){
@@ -88,6 +89,7 @@ async function userLogin(req, res, User){
                             // 202 Login Accepted
                             res.status(202).send({
                                 'message' : responseMessages.key('login-success').lang('pt_br'),
+                                'username' : matches,
                                 'token' : token
                             });
                             console.log(responseMessages.key('login-success').lang('pt_br'));

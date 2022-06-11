@@ -3,30 +3,33 @@ var bodyParser = require('body-parser');
 var cors = require('cors');
 var app = express();
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-// parse application/json
-app.use(bodyParser.json());
+/* HTTP API */
+    // parse application/x-www-form-urlencoded
+    app.use(bodyParser.urlencoded({ extended: false }));
+    // parse application/json
+    app.use(bodyParser.json());
+    // Enable CORS all origins *
+    app.use(cors());
 
-app.use(cors());
+    /* HTTP ROUTES */
+    // parameters( path, function(request, response, nextFunction))
+    app.get('/', function(req, res) {
+        console.log('GET requested');
+    });
 
+    app.post('/', function(req, res) {
+        console.log('req body:',req.body);
+        res.send('POST requested');
+    });
 
+    const iotRouter = require('./routes/iot/app');
+    app.use('/iot/app', iotRouter);
 
-// parameters( path, function(request, response, nextFunction))
-app.get('/', function(req, res) {
-    console.log('GET requested');
-});
+    const applicationsRouter = require('./routes/applications/app');
+    app.use('/applications/app', applicationsRouter);
 
-app.post('/', function(req, res) {
-    console.log('req body:',req.body);
-    res.send('POST requested');
-});
+    app.listen(5000);
 
+/* MQTT API */
 
-const iotRouter = require('./routes/iot/app');
-app.use('/iot/app', iotRouter);
-
-const applicationsRouter = require('./routes/applications/app');
-app.use('/applications/app', applicationsRouter);
-
-app.listen(5000);
+    //const mqttClient = require('./iot/mqtt-controller');
