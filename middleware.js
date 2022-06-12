@@ -13,14 +13,14 @@ var app = express();
 
     /* HTTP ROUTES */
     // parameters( path, function(request, response, nextFunction))
-    app.get('/', function(req, res) {
-        console.log('GET requested');
-    });
+    // app.get('/', function(req, res) {
+    //     console.log('GET requested');
+    // });
 
-    app.post('/', function(req, res) {
-        console.log('req body:',req.body);
-        res.send('POST requested');
-    });
+    // app.post('/', function(req, res) {
+    //     console.log('req body:',req.body);
+    //     res.send('POST requested');
+    // });
 
     const iotRouter = require('./routes/iot/app');
     app.use('/iot/app', iotRouter);
@@ -32,4 +32,4 @@ var app = express();
 
 /* MQTT API */
 
-    const mqttClient = require('./iot/mqtt-controller');
+    const mqttClient = require('./controllers/iot/mqtt-controller');

@@ -1,6 +1,6 @@
 // controller.js
 const mqtt = require('mqtt');
-const db = require('../db');
+const db = require('../../db');
 
 const client = mqtt.connect('da4cea57792c41b6be6304e4ece822b0.s1.eu.hivemq.cloud', {
     rejectUnauthorized: false,

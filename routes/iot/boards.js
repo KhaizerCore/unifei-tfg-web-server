@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../../db');
+const commonAuth = require('../../controllers/common-auth');
 
 async function retriveBoardData(req, res){
     try {
@@ -30,6 +31,7 @@ async function userHasLicense(email, license_key){
     return userLicenses.length > 0;
 }
 
+// POSTERIORMENTE AUTENTICAR VIA EMAIL LOGIN_TOKEN!
 async function registerBoard(res, data){
     try {
         userHasLicense(data.owner_email, data.license_key).then(hasLicense => {
@@ -73,6 +75,23 @@ async function registerBoard(res, data){
     }
 }
 
+async function requestBoardControl(req, res) {
+    let email = req.headers.email;
+    let token = req.headers.token;
+
+    commonAuth.validateUserLoginToken(email, token).then(validated => { 
+        if (validated){
+            let controlParams = req.body;
+            console.log('Control Params:', controlParams);
+            res.status(200).send(
+                controlParams
+            );
+        }else{
+            res.status(500).send();
+        }
+        
+    });
+}
 
 // parameters( path, function(request, response, nextFunction))
 router.get('/', function(req, res) {
@@ -82,6 +101,12 @@ router.get('/', function(req, res) {
 router.post('/register', function(req, res) {
     let data = req.body;
     registerBoard(res, data);    
+});
+
+router.post('/control', function(req, res) {
+    // MUST PASS in header --> Email and Login Session Token
+    // Body must contain a list of outputs and it's values
+    requestBoardControl(req, res);
 });
 
 
