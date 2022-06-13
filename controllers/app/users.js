@@ -77,8 +77,17 @@ async function getUserBoards(email) {
     let boards = await db.Board.find({
         owner_email : email
     });
-    console.log('getUserBoards', boards);
+    // console.log('getUserBoards', boards);
     return boards;
+}
+
+async function getUserSpecificBoard(email, license_key) {
+    let board = await db.Board.findOne({
+        owner_email : email,
+        license_key : license_key
+    });
+    console.log('getUserSpecificBoard', board);
+    return board;
 }
 
 async function savePasswordResetRegister(emailTo, code){
@@ -136,6 +145,7 @@ function sendEmail(req, res, emailTo, subject, content){
     });
 }
 
+// Function to be further developed. For now, user can have no license limit
 function userHasAchievedBoardLicenseLimit(email){
     // Function to be further developed. For now, user can have no license limit
     return false;
@@ -288,6 +298,27 @@ async function requestUserBoards(req, res){
     });
 }
 
+async function requestUserSpecificBoard(req, res){
+    let email = req.headers.email;
+    let token = req.headers.token;
+    let license_key = req.body.license_key;
+
+    commonAuth.validateUserLoginToken(email, token).then(validated => { 
+        if (validated) {
+            getUserSpecificBoard(email, license_key).then(board => {
+                res.status(200).send({
+                    board : board
+                });
+            });
+        }else{
+            // 401 Unauthorized
+            res.status(401).send({
+                // INSERIR MENSAGEM DE RESPOSTA
+            });
+        }
+    });
+}
+
 async function requestBoardLicenseCreation(req, res){
     // passar email e token de usuario
     let email = req.headers.email;
@@ -310,5 +341,6 @@ module.exports = {
     requestChangePassword : requestChangePassword,
     requestBoardLicenseCreation : requestBoardLicenseCreation,
     requestUserBoardLicenses : requestUserBoardLicenses,
-    requestUserBoards : requestUserBoards
+    requestUserBoards : requestUserBoards,
+    requestUserSpecificBoard : requestUserSpecificBoard
 }

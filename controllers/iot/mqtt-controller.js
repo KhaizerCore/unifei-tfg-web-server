@@ -133,8 +133,8 @@ function toggleActuators(){
       setRelay('false');
       setled('true');
       toggleActuators();
-    }, 2000)
-  }, 2000)
+    }, 2000);
+  }, 2000);
 }
 
 exports = client;

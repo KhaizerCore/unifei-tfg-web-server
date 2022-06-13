@@ -12,6 +12,7 @@ var getAuthCode = function (){
     return String(code)
 }
 
+// TO BE IMPLEMENTED: MAX USER SESSION TIME --> compare now with timestamp
 async function validateUserLoginToken(email, token){
     let Login = db.Login;
     // matches login token

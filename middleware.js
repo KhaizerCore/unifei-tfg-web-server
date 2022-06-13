@@ -32,4 +32,4 @@ var app = express();
 
 /* MQTT API */
 
-    const mqttClient = require('./controllers/iot/mqtt-controller');
+    //const mqttClient = require('./controllers/iot/mqtt-controller');

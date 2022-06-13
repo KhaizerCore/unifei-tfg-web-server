@@ -30,4 +30,8 @@ router.get('/boards', function(req, res) {
     usersController.requestUserBoards(req, res);
 });
 
+router.get('/specific-board', function(req, res) {
+    usersController.requestUserSpecificBoard(req, res);
+});
+
 module.exports = router;
