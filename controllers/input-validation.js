@@ -11,12 +11,12 @@ passwordValidator.is().max(32);
 passwordValidator.has().not().spaces();
 
 var emailAndPasswordValidation = function (email, password) {
-    return (emailValidator.validate(email) & passwordValidator.validate(password));
+    return (emailValidator.validate(email) && passwordValidator.validate(password));
 }
 
 var validate6NumberAuthCode = function (code) {
     code = String(code);
-    return (code.length === 6) & (code.match(/^ *$/) === null)
+    return (code.length === 6) && (code.match(/^ *$/) === null)
 }
 
 module.exports = {
