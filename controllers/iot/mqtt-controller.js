@@ -53,21 +53,28 @@ function validBoardIOTopicReturnTopicBoardID(topic) {
     : false;
 }
 
-async function handleBoardIOValues(message) {
-  console.log('message:', message);
+// It updates all device_setup. So, always keeping up with board setup.
+// If you add or remove something on board JSON config, it will reflect  
+//on middleware DB once MQTT update arrives on mqtt-controller.
+async function db_updateBoardSetupValues(license_key, setup) {
   try {
-    await db.Board.findOneAndUpdate(
+    return await db.Board.findOneAndUpdate(
       {
-        license_key : message.board_id 
+        license_key : license_key
       },
       {
-        device_setup : message.device_setup
+        device_setup : setup
       }
     );
-    console.log('handleBoardIOValues db.Board.findOneAndUpdate successfull');
   } catch (error) {
     console.log('handleBoardIOValues error', error);
   }
+}
+
+async function handleBoardIOValues(message) {
+  console.log('message:', message);
+  
+  db_updateBoardSetupValues(message.board_id, message.device_setup);
   
 }
 
@@ -120,46 +127,36 @@ function handleBoardConnected (message) {
 
 /* 
 --- Server side publications rules (control board outputs) ---
-  - For every IO element from board, there will be a topic. Thus, it's expected 
+  - For every device setup element from board, there will be a topic. Thus, it's expected 
   that the board will subscribe to it's own IO elements on initial setup.
     - Topic syntax : server/boardID/IO
-    - Topic payload : {
-      "IO_TYPE" : String,
-      "PIN" : Int,
-      "CODE" : String,
-      "NAME" : String,
-      "VALUE": typeof(value) value,
-      "VALUE_TYPE" : String
-    }
+    - Topic payload : [
+      {
+        "TYPE" : String,
+        "VARIABLE_NAME" : String,
+        "NAME" : String,
+        "PIN" : Int,
+        "CODE" : String,
+        "VALUE": typeof(value) value,
+        "VALUE_TYPE" : String
+        _id : String
+      }
+    ]
+    
 */
 
-// class BoardIOPayload{
-//   constructor(){
-//     this.io_type = 
-//     this.pin = 
-//     this.code = {};
-//     this.name = 
-//     this.value = 
-//     this.value_type = typeof(value);
-//   }
-
-//   getPayload = function(){
-
-//   }
-// }
-
-async function sendBoardValue(license_key, topicPayload) {
-  let topic = 'server/' + license_key +'/IO';
+async function sendBoardValue(license_key, setup) {
+  let topic = 'server/' + license_key +'/IO'; // will be /SETUP
   console.log('topic published:',topic);
-  return await client.publish(topic, JSON.stringify(topicPayload));
+  return await client.publish(topic, JSON.stringify(setup));
 }
 
 function setled (state) {
-  client.publish('actuators/led/state', state)
+  client.publish('actuators/led/state', state);
 }
 
 function setRelay (state) {
-  client.publish('actuators/relay/state', state)
+  client.publish('actuators/relay/state', state);
 }
 
 

@@ -6,7 +6,15 @@ const boardSchema = new mongoose.Schema({
         license_key : String,
         device_nickname : String,
         device_type : String,
-        device_setup : Array
+        device_setup : [{
+                TYPE : String,
+                VARIABLE_NAME : String,
+                NAME : String,
+                PIN : Number,
+                CODE : String,
+                VALUE : "mixed",
+                VALUE_TYPE : String
+        }]
 }, { collection: 'boardcollection' });
 const Board = mongoose.model('Board', boardSchema);
 

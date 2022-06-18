@@ -301,7 +301,7 @@ async function requestUserBoards(req, res){
 async function requestUserSpecificBoard(req, res){
     let email = req.headers.email;
     let token = req.headers.token;
-    let license_key = req.body.license_key;
+    let license_key = req.headers.license_key;
 
     commonAuth.validateUserLoginToken(email, token).then(validated => { 
         if (validated) {
@@ -328,9 +328,11 @@ async function requestBoardLicenseCreation(req, res){
     commonAuth.validateUserLoginToken(email, token).then(validated => {
         if (validated) {
             if (!userHasAchievedBoardLicenseLimit()){
-                createBoardLicense(email)
+                createBoardLicense(email);
                 res.status(200).send('license request probably well done');
             }
+        }else{
+            res.status(401).send('License Creation Failed');
         }
     });
 }

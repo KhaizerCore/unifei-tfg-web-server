@@ -1,0 +1,24 @@
+// MongoDB Playground
+// To disable this template go to Settings | MongoDB | Use Default Template For Playground.
+// Make sure you are connected to enable completions and to be able to run a playground.
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Select the database to use.
+use('tfg');
+
+// db.boardcollection.updateOne({
+//     "license_key" : "347848d2-757c-4861-a3e5-c8e12e3c538d"
+//   },{
+//     "$set" : {
+//        "device_setup.$[element].VALUE" : false
+//     }
+//   },{
+//     "arrayFilters" : [{ 
+//       "element.PIN" : 2
+//     }]
+//   }
+// );
+
+db.findOne(
+    {"_id" : ObjectId("62acf1dec5aaaea4375349dd")}
+);
