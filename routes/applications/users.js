@@ -35,4 +35,8 @@ router.get('/specific-board', function(req, res) {
     usersController.requestUserSpecificBoard(req, res);
 });
 
+router.put('/change-board-nickname', function(req, res) {
+    usersController.requestChangeBoardNickname(req, res);
+});
+
 module.exports = router;

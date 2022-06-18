@@ -261,7 +261,6 @@ async function requestBoardControl(req, res) {
             const license_key = controlParams.license_key;
             const setup = controlParams.setup;
             
-            /// !! Validar via id, pois senao nao ira funcionar para varios parametros
             validateBoardSetup(license_key, setup).then(boardSetupValidated => {
                 if (boardSetupValidated){
                     

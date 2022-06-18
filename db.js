@@ -13,7 +13,8 @@ const boardSchema = new mongoose.Schema({
                 PIN : Number,
                 CODE : String,
                 VALUE : "mixed",
-                VALUE_TYPE : String
+                VALUE_TYPE : String,
+                TOPIC_ID : String
         }]
 }, { collection: 'boardcollection' });
 const Board = mongoose.model('Board', boardSchema);

@@ -337,6 +337,42 @@ async function requestBoardLicenseCreation(req, res){
     });
 }
 
+async function updateBoardNicknname(email, license_key, device_nickname){
+    const updateResult = await db.Board.collection.updateOne(
+        {
+            "owner_email" : email,
+            "license_key" : license_key
+        },{
+            "$set" : {
+                "device_nickname" : device_nickname
+            }
+        }
+    );
+    return updateResult;
+}
+
+async function requestChangeBoardNickname(req, res){
+        // passar email e token de usuario
+        const email = req.headers.email;
+        const token = req.headers.token;
+        
+        // VALIDATE WITH EMAIL AND TOKEN, and timestamp delta max session time
+        commonAuth.validateUserLoginToken(email, token).then(validated => {
+            if (validated) {
+                const license_key = req.body.license_key;
+                const device_nickname = req.body.device_nickname;
+                
+                updateBoardNicknname(email, license_key, device_nickname).then(updateResult => {
+                    console.log("updateBoardNicknname result:",updateResult);
+                    res.status(200).send('ChangeBoardNickname request probably well done');
+                })
+                
+            }else{
+                res.status(401).send('ChangeBoardNickname request Failed');
+            }
+        });
+}
+
 module.exports = {
     requestCreateUser : requestCreateUser,
     requestForgotPassword : requestForgotPassword,
@@ -344,5 +380,6 @@ module.exports = {
     requestBoardLicenseCreation : requestBoardLicenseCreation,
     requestUserBoardLicenses : requestUserBoardLicenses,
     requestUserBoards : requestUserBoards,
-    requestUserSpecificBoard : requestUserSpecificBoard
+    requestUserSpecificBoard : requestUserSpecificBoard,
+    requestChangeBoardNickname : requestChangeBoardNickname
 }

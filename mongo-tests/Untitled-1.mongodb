@@ -19,6 +19,47 @@ use('tfg');
 //   }
 // );
 
-db.findOne(
-    {"_id" : ObjectId("62acf1dec5aaaea4375349dd")}
+db.boardcollection.find();
+
+//Remove all device setup elements from device setup array
+db.boardcollection.updateOne(
+    {
+        license_key : "4599ce42-112d-4823-95be-6539fcd93982"        
+    },{
+        "$set" : {
+            "device_setup" : []
+        }
+    }
+);
+
+// Insert device setup element on device setup array
+db.boardcollection.updateOne(
+    {
+        license_key : "4599ce42-112d-4823-95be-6539fcd93982"        
+    },{
+        "$push" : {
+            "device_setup" : { "$each" : [
+                    {   
+                        "TYPE" : "VARIABLE",
+                        "VARIABLE_NAME" : "temperature_target",
+                        "PIN" : 0,
+                        "CODE" : "",
+                        "NAME" : "",
+                        "VALUE" : 18,
+                        "VALUE_TYPE" : "INT",
+                        "TOPIC_ID" : "1"
+                    },{
+                        "TYPE" : "OUTPUT",
+                        "VARIABLE_NAME" : "",
+                        "PIN" : 2,
+                        "CODE" : "",
+                        "NAME" : "",
+                        "VALUE" : false,
+                        "VALUE_TYPE" : "BOOL",
+                        "TOPIC_ID" : "2"
+                    }
+                ]
+            }
+        }
+    }
 );
