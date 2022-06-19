@@ -64,7 +64,7 @@ async function requestRegisterBoard(req, res){
                                 );
                             }else{
                                 console.log("Board Registration Failed!");
-                                res.status(500).send("Board Registration Failed!");
+                                res.status(403).send("Board Registration Failed!");
                             }
                         });
                     }else{

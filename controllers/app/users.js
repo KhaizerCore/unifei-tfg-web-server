@@ -86,7 +86,7 @@ async function getUserSpecificBoard(email, license_key) {
         owner_email : email,
         license_key : license_key
     });
-    console.log('getUserSpecificBoard', board);
+    //console.log('getUserSpecificBoard', board);
     return board;
 }
 
@@ -258,6 +258,23 @@ async function requestForgotPassword(req, res) {
     }
 }
 
+async function areLicensesInUse(licenses){
+    let licensesWithUsageStatistic = [];
+    for (let i = 0; i < licenses.length; i++){
+        let license = licenses[i];
+        board = await db.Board.find({
+            license_key : license
+        });
+        licensesWithUsageStatistic.push(
+            {   
+                "license_key" : license,
+                "in_use" : board.length > 0 ? true : false
+            }
+        );
+    }
+    return licensesWithUsageStatistic;
+}
+
 async function requestUserBoardLicenses(req, res){
     let email = req.headers.email;
     let token = req.headers.token;
@@ -265,15 +282,13 @@ async function requestUserBoardLicenses(req, res){
     commonAuth.validateUserLoginToken(email, token).then(validated => { 
         if (validated){
             getUser(email).then(user => {
-                res.status(200).send({
-                    license_keys : user.license_keys
-                });
+                areLicensesInUse(user.license_keys).then(licensesWithUsageStatistic => {
+                    res.status(200).send(licensesWithUsageStatistic);
+                });                
             });            
         }else{
             // 401 Unauthorized
-            res.status(401).send({
-                // INSERIR MENSAGEM DE RESPOSTA
-            });
+            res.status(401).send('Autenticacao mal sucedida!');
         }
     });
 }
@@ -291,9 +306,7 @@ async function requestUserBoards(req, res){
             });          
         }else{
             // 401 Unauthorized
-            res.status(401).send({
-                // INSERIR MENSAGEM DE RESPOSTA
-            });
+            res.status(401).send('Autenticacao mal sucedida!');
         }
     });
 }
@@ -312,9 +325,7 @@ async function requestUserSpecificBoard(req, res){
             });
         }else{
             // 401 Unauthorized
-            res.status(401).send({
-                // INSERIR MENSAGEM DE RESPOSTA
-            });
+            res.status(401).send('Autenticacao mal sucedida!');
         }
     });
 }
@@ -332,7 +343,7 @@ async function requestBoardLicenseCreation(req, res){
                 res.status(200).send('license request probably well done');
             }
         }else{
-            res.status(401).send('License Creation Failed');
+            res.status(401).send('Autenticacao mal sucedida!');
         }
     });
 }

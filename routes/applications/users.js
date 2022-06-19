@@ -19,7 +19,6 @@ router.put('/changePass', function(req, res) {
 });
 
 router.post('/createLicense', function(req, res) {
-    console.log('req ok');
     usersController.requestBoardLicenseCreation(req, res);
 });
 
