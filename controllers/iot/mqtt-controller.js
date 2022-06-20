@@ -179,15 +179,32 @@ function handleBoardConnected (message) {
 */
 
 async function sendBoardValue(license_key, setup) {
-  
-  for (let i = 0; i < setup.length; i++){
-    let setup_element = setup[i];
-    let topic = 'server/' + license_key +'/setup/' + setup_element['_id'];
+  const board = await db.Board.findOne({
+    "license_key" : license_key
+  });
+  const db_device_setup = board['device_setup'];
+ 
+  setup.forEach((setup_element) => {
+    let topic_id = null;
     
-    await client.publish(topic, JSON.stringify(setup));
-    console.log('topic published:',topic);
-  }
-  return;
+    db_device_setup.forEach((db_setup) => {
+      if (db_setup['_id'] == setup_element['_id']){
+
+        topic_id = db_setup['TOPIC_ID'];
+        const topic = 'server/' + license_key + '/setup/' + topic_id;    
+        
+        const notToBeUpdatedTokens = ['_id', 'TOPIC_ID'];
+        notToBeUpdatedTokens.forEach((key) => {
+          delete setup_element[key];
+        });
+        
+        
+        client.publish(topic, JSON.stringify(setup_element));
+        console.log('topic published:',topic);
+      }
+    });    
+  });
+
 }
 
 function setled (state) {

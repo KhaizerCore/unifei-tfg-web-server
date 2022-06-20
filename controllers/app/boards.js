@@ -217,7 +217,7 @@ async function validateBoardSetup(license_key, setup){
 //update their values using id as filter.
 // pass 
 async function db_updateBoardSetupValues(license_key, setup) {
-    const notToBeUpdatedTokens = ['_id'];
+    const notToBeUpdatedTokens = ['_id', 'TOPIC_ID'];
     
     for (let i = 0; i < setup.length; i++){
         let setup_element = setup[i];
