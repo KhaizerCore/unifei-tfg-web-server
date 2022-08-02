@@ -1,63 +1,41 @@
 const express = require('express');
 const router = express.Router();
+const authRouter = require('./auth');
+const usersController = require('../../controllers/app/users');
 
-// parameters( path, function(request, response, nextFunction))
-router.get('/', function(req, res) {
-    res.send("User List");
-});
+router.use('/auth', authRouter);
 
-router.get('/new', function(req, res) {
-    res.send("User New Form");
-});
 
 router.post('/create', function(req, res) {
-    console.log("req:", req.body);
-    res.send("Create User");
+    usersController.requestCreateUser(req, res);
 });
 
-router.route('/:id')
-    .get(
-        function(req, res) {
-            let id = req.params.id;
-            res.send("User Get " + id);
-        }
-    ).put(
-        function(req, res) {
-            let id = req.params.id;
-            res.send("User Put " + id);
-        }
-    ).delete(
-        function(req, res) {
-            let id = req.params.id;
-            res.send("User Delete " + id);
-        }
-    );
-
-// Every time that finds passed param do the following (in any existing route):
-router.param("id", function(req, res, next, id) {
-    console.log(id);
+router.post('/forgotPass', function(req, res) {
+    usersController.requestForgotPassword(req, res);
 });
 
-/*
-    // - The Structure below can be replaced by more efficient router.route('/:id).(get || put || post || delete)
-
-// Get info of user id
-router.get('/:id', function(req, res) {
-    let id = req.params.id;
-    res.send("User Get "+id);
+router.put('/changePass', function(req, res) {
+    usersController.requestChangePassword(req, res);
 });
 
-// update info of user id
-router.put('/:id', function(req, res) {
-    let id = req.params.id;
-    res.send("User Put "+id);
+router.post('/createLicense', function(req, res) {
+    usersController.requestBoardLicenseCreation(req, res);
 });
 
-// delete info of user id
-router.delete('/:id', function(req, res) {
-    let id = req.params.id;
-    res.send("User Delete "+id);
+router.get('/boardLicenses', function(req, res) {
+    usersController.requestUserBoardLicenses(req, res);
 });
-*/
+
+router.get('/boards', function(req, res) {
+    usersController.requestUserBoards(req, res);
+});
+
+router.get('/specific-board', function(req, res) {
+    usersController.requestUserSpecificBoard(req, res);
+});
+
+router.put('/change-board-nickname', function(req, res) {
+    usersController.requestChangeBoardNickname(req, res);
+});
 
 module.exports = router;

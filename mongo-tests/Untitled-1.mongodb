@@ -1,0 +1,65 @@
+// MongoDB Playground
+// To disable this template go to Settings | MongoDB | Use Default Template For Playground.
+// Make sure you are connected to enable completions and to be able to run a playground.
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Select the database to use.
+use('tfg');
+
+// db.boardcollection.updateOne({
+//     "license_key" : "347848d2-757c-4861-a3e5-c8e12e3c538d"
+//   },{
+//     "$set" : {
+//        "device_setup.$[element].VALUE" : false
+//     }
+//   },{
+//     "arrayFilters" : [{ 
+//       "element.PIN" : 2
+//     }]
+//   }
+// );
+
+db.boardcollection.find();
+
+//Remove all device setup elements from device setup array
+db.boardcollection.updateOne(
+    {
+        license_key : "4599ce42-112d-4823-95be-6539fcd93982"        
+    },{
+        "$set" : {
+            "device_setup" : []
+        }
+    }
+);
+
+// Insert device setup element on device setup array
+db.boardcollection.updateOne(
+    {
+        license_key : "4599ce42-112d-4823-95be-6539fcd93982"        
+    },{
+        "$push" : {
+            "device_setup" : { "$each" : [
+                    {   
+                        "TYPE" : "VARIABLE",
+                        "VARIABLE_NAME" : "temperature_target",
+                        "PIN" : 0,
+                        "CODE" : "",
+                        "NAME" : "",
+                        "VALUE" : 18,
+                        "VALUE_TYPE" : "INT",
+                        "TOPIC_ID" : "1"
+                    },{
+                        "TYPE" : "OUTPUT",
+                        "VARIABLE_NAME" : "",
+                        "PIN" : 2,
+                        "CODE" : "",
+                        "NAME" : "",
+                        "VALUE" : false,
+                        "VALUE_TYPE" : "BOOL",
+                        "TOPIC_ID" : "2"
+                    }
+                ]
+            }
+        }
+    }
+);
