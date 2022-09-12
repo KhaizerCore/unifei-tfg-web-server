@@ -140,7 +140,9 @@ function sendEmail(req, res, emailTo, subject, content) {
             res.status(500).send(String(subject) + " " + responseMessages.key('email-not-sent').lang('pt_br'));
         } else {
             console.log('Email sent: ' + info.response);
-            res.status(200).send(String(subject) + " " + responseMessages.key('email-sent').lang('pt_br'));
+            res.status(200).send({
+                'message' : String(subject) + " " + responseMessages.key('email-sent').lang('pt_br')
+            });
         }
     });
 }
@@ -187,9 +189,9 @@ async function requestChangePassword(req, res) {
                         }).then(result => {
                             //console.log("updated:",result);
                         });
-                        res.status(200).send(
-                            responseMessages.key('pass-reset-success').lang('pt_br')
-                        );
+                        res.status(200).send({
+                            'message' : responseMessages.key('pass-reset-success').lang('pt_br')
+                        });
                     } catch (error) {
                         res.status(500).send(
                             responseMessages.key('pass-reset-fail').lang('pt_br')
@@ -377,7 +379,9 @@ async function requestChangeBoardNickname(req, res) {
 
             updateBoardNicknname(email, license_key, device_nickname).then(updateResult => {
                 console.log("updateBoardNicknname result:", updateResult);
-                res.status(200).send('ChangeBoardNickname request probably well done');
+                res.status(200).send({
+                    'message' : 'ChangeBoardNickname request probably well done'
+                });
             })
 
         } else {

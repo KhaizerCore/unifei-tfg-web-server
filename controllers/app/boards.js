@@ -267,7 +267,9 @@ async function requestBoardControl(req, res) {
                     
                     db_updateBoardSetupValues(license_key, setup).then(resolved => {
                         mqttController.sendBoardValue(license_key, setup).then(mqttResolved => {
-                            res.status(200).send('Board control sent successfully');
+                            res.status(200).send({
+                                'message': 'Board control sent successfully'
+                            });
                         });
                     });
 
