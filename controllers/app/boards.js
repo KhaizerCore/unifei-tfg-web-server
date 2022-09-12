@@ -261,12 +261,15 @@ async function requestBoardControl(req, res) {
             const license_key = controlParams.license_key;
             const setup = controlParams.setup;
             
+                        
             validateBoardSetup(license_key, setup).then(boardSetupValidated => {
                 if (boardSetupValidated){
                     
                     db_updateBoardSetupValues(license_key, setup).then(resolved => {
                         mqttController.sendBoardValue(license_key, setup).then(mqttResolved => {
-                            res.status(200).send('Board control sent successfully');
+                            res.status(200).send({
+                                'message': 'Board control sent successfully'
+                            });
                         });
                     });
 

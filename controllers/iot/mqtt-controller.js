@@ -3,16 +3,35 @@ const { ObjectId } = require('mongodb');
 const mqtt = require('mqtt');
 const db = require('../../db');
 
-const client = mqtt.connect('da4cea57792c41b6be6304e4ece822b0.s1.eu.hivemq.cloud', {
-    rejectUnauthorized: false,
-    protocol: 'MQTTS'
+// const client = mqtt.connect('broker.emqx.io', {
+//     rejectUnauthorized: false,
+//     protocol: 'MQTT'
+// });
+
+const host = '2eddfd9c7eba4f5a8fa6cc3d402240e3.s1.eu.hivemq.cloud'
+const port = '8883'
+const clientId = `mqtt_${Math.random().toString(16).slice(3)}`
+
+const connectUrl = `mqtts://${host}:${port}`
+const client = mqtt.connect(connectUrl, {
+  clientId,
+  clean: true,
+  connectTimeout: 4000,
+  username: 'sigiotsystem',
+  password: 'sigiotsystem',
+  reconnectPeriod: 1000,
 });
-/*
-const client = mqtt.connect('broker.hivemq.com', {
-  //rejectUnauthorized: false,
-  protocol: 'MQTT'
-});
-*/
+
+// const client = mqtt.connect('2eddfd9c7eba4f5a8fa6cc3d402240e3.s1.eu.hivemq.cloud', {
+//   rejectUnauthorized: false,
+//   protocol: 'MQTTS'
+// });
+
+// const client = mqtt.connect('broker.hivemq.com', {
+//   //rejectUnauthorized: false,
+//   protocol: 'MQTT'
+// });
+
 
 
 client.on('connect', () => {
@@ -201,6 +220,7 @@ async function sendBoardValue(license_key, setup) {
         
         client.publish(topic, JSON.stringify(setup_element));
         console.log('topic published:',topic);
+        console.log('message:', setup_element);        
       }
     });    
   });

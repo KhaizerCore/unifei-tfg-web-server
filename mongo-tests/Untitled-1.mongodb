@@ -20,7 +20,7 @@ use('tfg');
 // );
 
 db.boardcollection.find();
-
+/*
 //Remove all device setup elements from device setup array
 db.boardcollection.updateOne(
     {
@@ -63,3 +63,4 @@ db.boardcollection.updateOne(
         }
     }
 );
+*/
