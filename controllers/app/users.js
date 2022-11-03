@@ -281,35 +281,23 @@ async function requestUserBoardLicenses(req, res) {
     let email = req.headers.email;
     let token = req.headers.token;
 
-    commonAuth.validateUserLoginToken(email, token).then(validated => {
-        if (validated) {
-            getUser(email).then(user => {
-                areLicensesInUse(user.license_keys).then(licensesWithUsageStatistic => {
-                    res.status(200).send(licensesWithUsageStatistic);
-                });
-            });
-        } else {
-            // 401 Unauthorized
-            res.status(401).send('Autenticacao mal sucedida!');
-        }
+
+    getUser(email).then(user => {
+        areLicensesInUse(user.license_keys).then(licensesWithUsageStatistic => {
+            res.status(200).send(licensesWithUsageStatistic);
+        });
     });
+
 }
 
 async function requestUserBoards(req, res) {
     let email = req.headers.email;
     let token = req.headers.token;
 
-    commonAuth.validateUserLoginToken(email, token).then(validated => {
-        if (validated) {
-            getUserBoards(email).then(boards => {
-                res.status(200).send({
-                    boards: boards
-                });
-            });
-        } else {
-            // 401 Unauthorized
-            res.status(401).send('Autenticacao mal sucedida!');
-        }
+    getUserBoards(email).then(boards => {
+        res.status(200).send({
+            boards: boards
+        });
     });
 }
 
@@ -318,17 +306,10 @@ async function requestUserSpecificBoard(req, res) {
     let token = req.headers.token;
     let license_key = req.headers.license_key;
 
-    commonAuth.validateUserLoginToken(email, token).then(validated => {
-        if (validated) {
-            getUserSpecificBoard(email, license_key).then(board => {
-                res.status(200).send({
-                    board: board
-                });
-            });
-        } else {
-            // 401 Unauthorized
-            res.status(401).send('Autenticacao mal sucedida!');
-        }
+    getUserSpecificBoard(email, license_key).then(board => {
+        res.status(200).send({
+            board: board
+        });
     });
 }
 
@@ -338,18 +319,13 @@ async function requestBoardLicenseCreation(req, res) {
     let token = req.headers.token;
 
     // VALIDATE WITH EMAIL AND TOKEN, and timestamp delta max session time
-    commonAuth.validateUserLoginToken(email, token).then(validated => {
-        if (validated) {
-            if (!userHasAchievedBoardLicenseLimit()) {
-                createBoardLicense(email);
-                res.status(200).send({
-                    'message': 'license request probably well done'
-                });
-            }
-        } else {
-            res.status(401).send('Autenticacao mal sucedida!');
-        }
-    });
+    if (!userHasAchievedBoardLicenseLimit()) {
+        createBoardLicense(email);
+        res.status(200).send({
+            'message': 'license request probably well done'
+        });
+    }
+
 }
 
 async function updateBoardNicknname(email, license_key, device_nickname) {
@@ -372,21 +348,14 @@ async function requestChangeBoardNickname(req, res) {
     const token = req.headers.token;
 
     // VALIDATE WITH EMAIL AND TOKEN, and timestamp delta max session time
-    commonAuth.validateUserLoginToken(email, token).then(validated => {
-        if (validated) {
-            const license_key = req.body.license_key;
-            const device_nickname = req.body.device_nickname;
+    const license_key = req.body.license_key;
+    const device_nickname = req.body.device_nickname;
 
-            updateBoardNicknname(email, license_key, device_nickname).then(updateResult => {
-                console.log("updateBoardNicknname result:", updateResult);
-                res.status(200).send({
-                    'message' : 'ChangeBoardNickname request probably well done'
-                });
-            })
-
-        } else {
-            res.status(401).send('ChangeBoardNickname request Failed');
-        }
+    updateBoardNicknname(email, license_key, device_nickname).then(updateResult => {
+        console.log("updateBoardNicknname result:", updateResult);
+        res.status(200).send({
+            'message' : 'ChangeBoardNickname request probably well done'
+        });
     });
 }
 
