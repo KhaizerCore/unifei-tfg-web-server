@@ -35,49 +35,41 @@ async function requestRegisterBoard(req, res){
 
     let data = req.body;
     try {
-        commonAuth.validateUserLoginToken(email, token).then(validated => {
-            if (validated) {
-                userHasLicense(email, data.license_key).then(hasLicense => {
-                    if (hasLicense){
-                        licenseInUse(data.license_key).then(inUse => {
-                            if (!inUse) {
-                                let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
-                                var board = new boards({
-                                    owner_email : email,
-                                    license_key : data.license_key,
-                                    device_nickname : data.device_nickname,
-                                    device_type : data.device_type,
-                                    device_setup : data.device_setup
-                                });
-                                board.save(
-                                    function(error) {
-                                        if (error) {
-                                            console.log("Board Registration Failed!");
-                                            res.status(500).send("Board Registration Failed!");
-                                        } else {
-                                            console.log("Board Registered Successfully!");
-                                            res.status(200).send({
-                                                'message' : "Board Registered Successfully!"
-                                            });
-                                        }
-                                    }
-                                );
-                            }else{
-                                console.log("Board Registration Failed!");
-                                res.status(403).send("Board Registration Failed!");
-                            }
+        userHasLicense(email, data.license_key).then(hasLicense => {
+            if (hasLicense){
+                licenseInUse(data.license_key).then(inUse => {
+                    if (!inUse) {
+                        let boards = db.Mongoose.model('boardcollection', db.BoardSchema, 'boardcollection');
+                        var board = new boards({
+                            owner_email : email,
+                            license_key : data.license_key,
+                            device_nickname : data.device_nickname,
+                            device_type : data.device_type,
+                            device_setup : data.device_setup
                         });
+                        board.save(
+                            function(error) {
+                                if (error) {
+                                    console.log("Board Registration Failed!");
+                                    res.status(500).send("Board Registration Failed!");
+                                } else {
+                                    console.log("Board Registered Successfully!");
+                                    res.status(200).send({
+                                        'message' : "Board Registered Successfully!"
+                                    });
+                                }
+                            }
+                        );
                     }else{
                         console.log("Board Registration Failed!");
-                        res.status(500).send("Board Registration Failed!");
+                        res.status(403).send("Board Registration Failed!");
                     }
                 });
             }else{
                 console.log("Board Registration Failed!");
-                res.status(401).send("Board Registration Failed!");
+                res.status(500).send("Board Registration Failed!");
             }
-            
-        });        
+        });     
     }catch(err){
         console.log("Board Registration Failed!");
         res.status(500).send("Board Registration Failed!");
@@ -248,40 +240,30 @@ async function db_updateBoardSetupValues(license_key, setup) {
 
 // EM DESENVOLVIMENTO...
 async function requestBoardControl(req, res) {
-    let email = req.headers.email;
-    let token = req.headers.token;
+
+    let controlParams = req.body;
+    // console.log('Control Params:', controlParams);
+
+    const license_key = controlParams.license_key;
+    const setup = controlParams.setup;
     
-    console.log('requestBoardControl');
-
-    commonAuth.validateUserLoginToken(email, token).then(validated => { 
-        if (validated){
-            let controlParams = req.body;
-            // console.log('Control Params:', controlParams);
-
-            const license_key = controlParams.license_key;
-            const setup = controlParams.setup;
+                
+    validateBoardSetup(license_key, setup).then(boardSetupValidated => {
+        if (boardSetupValidated){
             
-                        
-            validateBoardSetup(license_key, setup).then(boardSetupValidated => {
-                if (boardSetupValidated){
-                    
-                    db_updateBoardSetupValues(license_key, setup).then(resolved => {
-                        mqttController.sendBoardValue(license_key, setup).then(mqttResolved => {
-                            res.status(200).send({
-                                'message': 'Board control sent successfully'
-                            });
-                        });
+            db_updateBoardSetupValues(license_key, setup).then(resolved => {
+                mqttController.sendBoardValue(license_key, setup).then(mqttResolved => {
+                    res.status(200).send({
+                        'message': 'Board control sent successfully'
                     });
-
-                }else{
-                    res.status(500).send('Invalid Board Setup');
-                }
+                });
             });
+
         }else{
-            res.status(401).send('Invalid Credentials');
+            res.status(500).send('Invalid Board Setup');
         }
-        
-    });
+    });        
+
 }
 
 module.exports = {
